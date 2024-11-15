@@ -64,6 +64,7 @@ pub fn tokenize(input: &str) -> i32 {
                 }
             }
             '\n' => line += 1,
+            ' ' | '\t' => {}
             _ => {
                 writeln!(
                     io::stderr(),
