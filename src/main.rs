@@ -22,7 +22,7 @@ fn main() {
             if !file_contents.is_empty() {
                 panic!("Scanner not implemented");
             } else {
-                println!("EOF null");
+                println!("EOF  null");
             }
         }
         _ => {
