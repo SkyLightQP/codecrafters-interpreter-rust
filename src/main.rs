@@ -19,15 +19,23 @@ fn main() {
                 String::new()
             });
 
-            if !file_contents.is_empty() {
-                panic!("Scanner not implemented");
-            } else {
-                println!("EOF  null");
-            }
+            tokenize(&file_contents);
+
+            println!("EOF  null");
         }
         _ => {
             writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
             return;
+        }
+    }
+}
+
+fn tokenize(input: &str) {
+    for char in input.chars() {
+        match char {
+            '(' => println!("LEFT_PAREN ( null"),
+            ')' => println!("RIGHT_PAREN ) null"),
+            _ => {}
         }
     }
 }
