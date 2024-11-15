@@ -64,6 +64,19 @@ pub fn tokenize(input: &str) -> i32 {
                     println!("SLASH / null");
                 }
             }
+            '"' => {
+                let mut string = String::new();
+                while let Some(&char) = chars.peek() {
+                    if char == '"' {
+                        break;
+                    }
+                    string.push(char);
+                    chars.next();
+                }
+                chars.next();
+
+                println!("STRING \"{}\" null", string);
+            }
             '\n' => line += 1,
             ' ' | '\t' => {}
             _ => {
