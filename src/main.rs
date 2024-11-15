@@ -60,6 +60,14 @@ fn tokenize(input: &str) -> i32 {
                     println!("EQUAL = null");
                 }
             }
+            '!' => {
+                if let Some(&'=') = chars.peek() {
+                    chars.next();
+                    println!("BANG_EQUAL != null");
+                } else {
+                    println!("BANG ! null");
+                }
+            }
             '\n' => line += 1,
             _ => {
                 print_error(line, char);
