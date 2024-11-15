@@ -10,6 +10,7 @@ pub fn tokenize(input: &str) -> i32 {
         if found_single_line_comment {
             if char == '\n' {
                 found_single_line_comment = false;
+                line += 1;
             }
             continue;
         }
