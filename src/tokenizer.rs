@@ -4,7 +4,9 @@ pub fn tokenize(input: &str) -> i32 {
     let mut line = 1;
     let mut latest_error_code = 0;
     let mut found_single_line_comment = false;
+    let mut found_string_literal = false;
     let mut chars = input.chars().peekable();
+    let mut string_buffer = String::new();
 
     while let Some(char) = chars.next() {
         if found_single_line_comment {
@@ -14,6 +16,22 @@ pub fn tokenize(input: &str) -> i32 {
             }
             continue;
         }
+        if found_string_literal {
+            if char == '"' {
+                found_string_literal = false;
+                println!(
+                    "STRING \"{}\" {}",
+                    string_buffer,
+                    string_buffer.replace("\"", "")
+                );
+                string_buffer = String::new();
+                continue;
+            }
+
+            string_buffer.push(char);
+            continue;
+        }
+
         match char {
             '(' => println!("LEFT_PAREN ( null"),
             ')' => println!("RIGHT_PAREN ) null"),
@@ -65,17 +83,7 @@ pub fn tokenize(input: &str) -> i32 {
                 }
             }
             '"' => {
-                let mut string = String::new();
-                while let Some(&char) = chars.peek() {
-                    if char == '"' {
-                        break;
-                    }
-                    string.push(char);
-                    chars.next();
-                }
-                chars.next();
-
-                println!("STRING \"{}\" null", string);
+                found_string_literal = true;
             }
             '\n' => line += 1,
             ' ' | '\t' => {}
@@ -90,6 +98,11 @@ pub fn tokenize(input: &str) -> i32 {
                 latest_error_code = 65;
             }
         }
+    }
+
+    if found_string_literal {
+        writeln!(io::stderr(), "[line {}] Error: Unterminated string.", line).unwrap();
+        latest_error_code = 65;
     }
 
     return latest_error_code;
