@@ -5,6 +5,7 @@ pub fn tokenize(input: &str) -> i32 {
     let mut latest_error_code = 0;
     let mut found_single_line_comment = false;
     let mut found_string_literal = false;
+    let mut found_float_literal = false;
     let mut chars = input.chars().peekable();
     let mut string_buffer = String::new();
 
@@ -84,6 +85,36 @@ pub fn tokenize(input: &str) -> i32 {
             }
             '"' => {
                 found_string_literal = true;
+            }
+            '0'..='9' => {
+                let mut number = String::new();
+                number.push(char);
+
+                while let Some(&char) = chars.peek() {
+                    if char.is_digit(10) || char == '.' {
+                        if char == '.' {
+                            found_float_literal = true;
+                        }
+
+                        number.push(char);
+                        chars.next();
+                    } else {
+                        break;
+                    }
+                }
+
+                if found_float_literal {
+                    let s = format!("{:.10}", number);
+                    let s = s.trim_end_matches('0').trim_end_matches('.');
+                    if !s.contains(".") {
+                        println!("NUMBER {} {}.0", number, s);
+                        continue;
+                    }
+                    println!("NUMBER {} {}", number, s);
+                    found_float_literal = false;
+                } else {
+                    println!("NUMBER {} {}.0", number, number);
+                }
             }
             '\n' => line += 1,
             ' ' | '\t' => {}
