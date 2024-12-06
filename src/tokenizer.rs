@@ -95,7 +95,6 @@ pub fn tokenize(input: &str) -> i32 {
                         if char == '.' {
                             found_float_literal = true;
                         }
-
                         number.push(char);
                         chars.next();
                     } else {
@@ -108,6 +107,7 @@ pub fn tokenize(input: &str) -> i32 {
                     let s = s.trim_end_matches('0').trim_end_matches('.');
                     if !s.contains(".") {
                         println!("NUMBER {} {}.0", number, s);
+                        found_float_literal = false;
                         continue;
                     }
                     println!("NUMBER {} {}", number, s);
@@ -115,6 +115,21 @@ pub fn tokenize(input: &str) -> i32 {
                 } else {
                     println!("NUMBER {} {}.0", number, number);
                 }
+            }
+            'a'..='z' | 'A'..='Z' | '_' => {
+                let mut identifier = String::new();
+                identifier.push(char);
+
+                while let Some(&char) = chars.peek() {
+                    if char.is_alphanumeric() || char == '_' {
+                        identifier.push(char);
+                        chars.next();
+                    } else {
+                        break;
+                    }
+                }
+
+                println!("IDENTIFIER {} null", identifier);
             }
             '\n' => line += 1,
             ' ' | '\t' => {}
