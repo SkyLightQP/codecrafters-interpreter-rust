@@ -129,7 +129,15 @@ pub fn tokenize(input: &str) -> i32 {
                     }
                 }
 
-                println!("IDENTIFIER {} null", identifier);
+                let reserved = [
+                    "and", "class", "else", "false", "for", "fun", "if", "nil", "or", "print",
+                    "return", "super", "this", "true", "var", "while",
+                ];
+                if reserved.contains(&identifier.as_str()) {
+                    println!("{} {} null", identifier.to_uppercase(), identifier);
+                } else {
+                    println!("IDENTIFIER {} null", identifier);
+                }
             }
             '\n' => line += 1,
             ' ' | '\t' => {}
