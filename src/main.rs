@@ -1,11 +1,14 @@
-mod tokenizer;
+mod lexer;
+mod parser;
+mod token;
 
 use std::env;
 use std::fs;
 use std::io::{self, Write};
 use std::process::exit;
 
-use tokenizer::tokenize;
+use lexer::lex;
+use parser::parse;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -24,13 +27,19 @@ fn main() {
                 String::new()
             });
 
-            let result = tokenize(&file_contents);
-
-            println!("EOF  null");
-
-            if result != 0 {
-                exit(result);
+            let result = lex(&file_contents, true);
+            if result.is_err() {
+                exit(result.err().unwrap());
             }
+        }
+        "parse" => {
+            let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
+                writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
+                String::new()
+            });
+            let lex_result = lex(&file_contents, false);
+
+            parse(lex_result.unwrap());
         }
         _ => {
             writeln!(io::stderr(), "Unknown command: {}", command).unwrap();

@@ -1,13 +1,14 @@
+use crate::token::Token;
 use std::io::{self, Write};
 
-pub fn tokenize(input: &str) -> i32 {
+pub fn lex(input: &str, print_tokens: bool) -> Result<Vec<Token>, i32> {
     let mut line = 1;
     let mut latest_error_code = 0;
     let mut found_single_line_comment = false;
     let mut found_string_literal = false;
-    let mut found_float_literal = false;
     let mut chars = input.chars().peekable();
     let mut string_buffer = String::new();
+    let mut tokens: Vec<Token> = vec![];
 
     while let Some(char) = chars.next() {
         if found_single_line_comment {
@@ -20,11 +21,7 @@ pub fn tokenize(input: &str) -> i32 {
         if found_string_literal {
             if char == '"' {
                 found_string_literal = false;
-                println!(
-                    "STRING \"{}\" {}",
-                    string_buffer,
-                    string_buffer.replace("\"", "")
-                );
+                tokens.push(Token::String(string_buffer.clone()));
                 string_buffer = String::new();
                 continue;
             }
@@ -34,53 +31,53 @@ pub fn tokenize(input: &str) -> i32 {
         }
 
         match char {
-            '(' => println!("LEFT_PAREN ( null"),
-            ')' => println!("RIGHT_PAREN ) null"),
-            '{' => println!("LEFT_BRACE {{ null"),
-            '}' => println!("RIGHT_BRACE }} null"),
-            '*' => println!("STAR * null"),
-            '.' => println!("DOT . null"),
-            ',' => println!("COMMA , null"),
-            '+' => println!("PLUS + null"),
-            '-' => println!("MINUS - null"),
-            ';' => println!("SEMICOLON ; null"),
+            '(' => tokens.push(Token::LeftParen),
+            ')' => tokens.push(Token::RightParen),
+            '{' => tokens.push(Token::LeftBrace),
+            '}' => tokens.push(Token::RightBrace),
+            '*' => tokens.push(Token::Star),
+            '.' => tokens.push(Token::Dot),
+            ',' => tokens.push(Token::Comma),
+            '+' => tokens.push(Token::Plus),
+            '-' => tokens.push(Token::Minus),
+            ';' => tokens.push(Token::Semicolon),
             '=' => {
                 if let Some(&'=') = chars.peek() {
+                    tokens.push(Token::EqualEqual);
                     chars.next();
-                    println!("EQUAL_EQUAL == null");
                 } else {
-                    println!("EQUAL = null");
+                    tokens.push(Token::Equal);
                 }
             }
             '!' => {
                 if let Some(&'=') = chars.peek() {
+                    tokens.push(Token::BangEqual);
                     chars.next();
-                    println!("BANG_EQUAL != null");
                 } else {
-                    println!("BANG ! null");
+                    tokens.push(Token::Bang);
                 }
             }
             '>' => {
                 if let Some(&'=') = chars.peek() {
+                    tokens.push(Token::GreaterEqual);
                     chars.next();
-                    println!("GREATER_EQUAL >= null");
                 } else {
-                    println!("GREATER > null");
+                    tokens.push(Token::Greater);
                 }
             }
             '<' => {
                 if let Some(&'=') = chars.peek() {
+                    tokens.push(Token::LessEqual);
                     chars.next();
-                    println!("LESS_EQUAL <= null");
                 } else {
-                    println!("LESS < null");
+                    tokens.push(Token::Less);
                 }
             }
             '/' => {
                 if let Some(&'/') = chars.peek() {
                     found_single_line_comment = true;
                 } else {
-                    println!("SLASH / null");
+                    tokens.push(Token::Slash);
                 }
             }
             '"' => {
@@ -92,9 +89,6 @@ pub fn tokenize(input: &str) -> i32 {
 
                 while let Some(&char) = chars.peek() {
                     if char.is_digit(10) || char == '.' {
-                        if char == '.' {
-                            found_float_literal = true;
-                        }
                         number.push(char);
                         chars.next();
                     } else {
@@ -102,19 +96,7 @@ pub fn tokenize(input: &str) -> i32 {
                     }
                 }
 
-                if found_float_literal {
-                    let s = format!("{:.10}", number);
-                    let s = s.trim_end_matches('0').trim_end_matches('.');
-                    if !s.contains(".") {
-                        println!("NUMBER {} {}.0", number, s);
-                        found_float_literal = false;
-                        continue;
-                    }
-                    println!("NUMBER {} {}", number, s);
-                    found_float_literal = false;
-                } else {
-                    println!("NUMBER {} {}.0", number, number);
-                }
+                tokens.push(Token::Number(number));
             }
             'a'..='z' | 'A'..='Z' | '_' => {
                 let mut identifier = String::new();
@@ -134,9 +116,9 @@ pub fn tokenize(input: &str) -> i32 {
                     "return", "super", "this", "true", "var", "while",
                 ];
                 if reserved.contains(&identifier.as_str()) {
-                    println!("{} {} null", identifier.to_uppercase(), identifier);
+                    tokens.push(Token::Reserved(identifier));
                 } else {
-                    println!("IDENTIFIER {} null", identifier);
+                    tokens.push(Token::Identifier(identifier));
                 }
             }
             '\n' => line += 1,
@@ -154,10 +136,47 @@ pub fn tokenize(input: &str) -> i32 {
         }
     }
 
+    tokens.push(Token::EOF);
+
+    if print_tokens {
+        for token in &tokens {
+            match token {
+                Token::LeftParen => println!("LEFT_PAREN ( null"),
+                Token::RightParen => println!("RIGHT_PAREN ) null"),
+                Token::LeftBrace => println!("LEFT_BRACE {{ null"),
+                Token::RightBrace => println!("RIGHT_BRACE }} null"),
+                Token::Star => println!("STAR * null"),
+                Token::Dot => println!("DOT . null"),
+                Token::Comma => println!("COMMA , null"),
+                Token::Plus => println!("PLUS + null"),
+                Token::Minus => println!("MINUS - null"),
+                Token::Semicolon => println!("SEMICOLON ; null"),
+                Token::EqualEqual => println!("EQUAL_EQUAL == null"),
+                Token::Equal => println!("EQUAL = null"),
+                Token::BangEqual => println!("BANG_EQUAL != null"),
+                Token::Bang => println!("BANG ! null"),
+                Token::Greater => println!("GREATER > null"),
+                Token::GreaterEqual => println!("GREATER_EQUAL >= null"),
+                Token::Less => println!("LESS < null"),
+                Token::LessEqual => println!("LESS_EQUAL <= null"),
+                Token::Slash => println!("SLASH / null"),
+                Token::String(s) => println!("STRING \"{}\" {}", s, s.replace("\"", "")),
+                Token::Number(s) => println!("NUMBER {} {:?}", s, s.parse::<f64>().unwrap()),
+                Token::Identifier(s) => println!("IDENTIFIER {} null", s),
+                Token::Reserved(s) => println!("{} {} null", s.to_uppercase(), s),
+                Token::EOF => println!("EOF  null"),
+            }
+        }
+    }
+
     if found_string_literal {
         writeln!(io::stderr(), "[line {}] Error: Unterminated string.", line).unwrap();
         latest_error_code = 65;
     }
 
-    return latest_error_code;
+    if latest_error_code != 0 {
+        return Err(latest_error_code);
+    }
+
+    return Ok(tokens);
 }
