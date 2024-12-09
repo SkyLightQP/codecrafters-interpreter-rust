@@ -42,14 +42,51 @@ impl Parser {
         }
     }
 
-    fn binary(&mut self) -> Expression {
+    fn factor(&mut self) -> Expression {
         let mut left = self.unary();
         loop {
             let token = self.peek();
             match token {
-                Token::Plus | Token::Minus | Token::Star | Token::Slash => {
+                Token::Star | Token::Slash => {
                     let operator = self.advance();
                     let right = self.unary();
+                    left = Expression::Binary(Box::new(left), operator, Box::new(right));
+                }
+                _ => break,
+            }
+        }
+        left
+    }
+
+    fn term(&mut self) -> Expression {
+        let mut left = self.factor();
+        loop {
+            let token = self.peek();
+            match token {
+                Token::Plus | Token::Minus => {
+                    let operator = self.advance();
+                    let right = self.factor();
+                    left = Expression::Binary(Box::new(left), operator, Box::new(right));
+                }
+                _ => break,
+            }
+        }
+        left
+    }
+
+    fn binary(&mut self) -> Expression {
+        let mut left = self.term();
+        loop {
+            let token = self.peek();
+            match token {
+                Token::EqualEqual
+                | Token::BangEqual
+                | Token::Greater
+                | Token::GreaterEqual
+                | Token::Less
+                | Token::LessEqual => {
+                    let operator = self.advance();
+                    let right = self.term();
                     left = Expression::Binary(Box::new(left), operator, Box::new(right));
                 }
                 _ => break,
