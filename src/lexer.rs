@@ -1,7 +1,7 @@
 use crate::token::Token;
 use std::io::{self, Write};
 
-pub fn lex(input: &str, print_tokens: bool) -> Result<Vec<Token>, i32> {
+pub fn tokenize(input: &str, print_tokens: bool) -> Result<Vec<Token>, i32> {
     let mut line = 1;
     let mut latest_error_code = 0;
     let mut found_single_line_comment = false;

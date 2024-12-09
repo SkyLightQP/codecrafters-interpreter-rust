@@ -1,42 +1,86 @@
-use crate::token::Token;
+use crate::{expression::Expression, token::Token};
 
 pub fn parse(tokens: Vec<Token>) {
-    let mut iter = tokens.iter();
+    let parsed = Parser::new(tokens).parse();
 
-    while let Some(token) = iter.next() {
+    println!("{}", parsed);
+}
+
+struct Parser {
+    tokens: Vec<Token>,
+    current: usize,
+}
+
+impl Parser {
+    fn new(tokens: Vec<Token>) -> Self {
+        Parser { tokens, current: 0 }
+    }
+
+    fn parse(&mut self) -> Expression {
+        self.expression()
+    }
+
+    fn expression(&mut self) -> Expression {
+        self.binary()
+    }
+
+    fn primary(&mut self) -> Expression {
+        let token = self.peek();
         match token {
-            Token::Reserved(s) => {
-                print!("{}", s);
-            }
-            Token::Number(n) => {
-                let symbol = iter.next().unwrap();
-                match symbol {
-                    Token::Plus | Token::Minus | Token::Star | Token::Slash => {
-                        let next = iter.next().unwrap();
-                        match next {
-                            Token::Number(n2) => {
-                                print!("({} {} {})", symbol, n, n2);
-                            }
-                            _ => {}
-                        }
-                    }
-                    _ => {
-                        print!("{:?}", n.parse::<f64>().unwrap());
-                        print!("{}", symbol);
-                    }
-                }
-            }
-            Token::String(s) => {
-                print!("{}", s);
-            }
+            Token::Number(_) => Expression::Literal(self.advance()),
+            Token::String(_) => Expression::Literal(self.advance()),
+            Token::Reserved(_) => Expression::Literal(self.advance()),
             Token::LeftParen => {
-                print!("(group ");
+                self.advance();
+                let expr = self.expression();
+                if self.peek() == &Token::RightParen {
+                    self.advance();
+                }
+                Expression::Grouping(Box::new(expr))
             }
-            Token::RightParen => {
-                print!(")");
+            _ => panic!("Unexpected token: {:?}", token),
+        }
+    }
+
+    fn binary(&mut self) -> Expression {
+        let mut left = self.unary();
+        while self.peek() == &Token::Plus {
+            let operator = self.advance();
+            let right = self.unary();
+            left = Expression::Binary(Box::new(left), operator, Box::new(right));
+        }
+        left
+    }
+
+    fn unary(&mut self) -> Expression {
+        let token = self.peek();
+        match token {
+            Token::Bang | Token::Minus => {
+                let operator = self.advance();
+                let right = self.unary();
+                return Expression::Unary(operator, Box::new(right));
             }
             _ => {}
         }
+        self.primary()
     }
-    println!();
+
+    fn peek(&self) -> &Token {
+        &self.tokens[self.current]
+    }
+
+    fn advance(&mut self) -> Token {
+        if !self.is_end() {
+            self.current += 1;
+        }
+        self.pervious()
+    }
+
+    fn pervious(&self) -> Token {
+        self.tokens[self.current - 1].clone()
+    }
+
+    fn is_end(&self) -> bool {
+        self.tokens[self.current] == Token::EOF
+    }
 }

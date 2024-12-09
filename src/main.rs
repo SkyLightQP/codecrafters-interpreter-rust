@@ -1,3 +1,4 @@
+mod expression;
 mod lexer;
 mod parser;
 mod token;
@@ -7,7 +8,7 @@ use std::fs;
 use std::io::{self, Write};
 use std::process::exit;
 
-use lexer::lex;
+use lexer::tokenize;
 use parser::parse;
 
 fn main() {
@@ -27,7 +28,7 @@ fn main() {
                 String::new()
             });
 
-            let result = lex(&file_contents, true);
+            let result = tokenize(&file_contents, true);
             if result.is_err() {
                 exit(result.err().unwrap());
             }
@@ -37,7 +38,7 @@ fn main() {
                 writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
                 String::new()
             });
-            let lex_result = lex(&file_contents, false);
+            let lex_result = tokenize(&file_contents, false);
 
             parse(lex_result.unwrap());
         }
