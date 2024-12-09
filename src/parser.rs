@@ -44,10 +44,16 @@ impl Parser {
 
     fn binary(&mut self) -> Expression {
         let mut left = self.unary();
-        while self.peek() == &Token::Plus {
-            let operator = self.advance();
-            let right = self.unary();
-            left = Expression::Binary(Box::new(left), operator, Box::new(right));
+        loop {
+            let token = self.peek();
+            match token {
+                Token::Plus | Token::Minus | Token::Star | Token::Slash => {
+                    let operator = self.advance();
+                    let right = self.unary();
+                    left = Expression::Binary(Box::new(left), operator, Box::new(right));
+                }
+                _ => break,
+            }
         }
         left
     }
