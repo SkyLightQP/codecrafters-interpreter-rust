@@ -53,7 +53,7 @@ impl Display for Token {
             Token::Number(s) => write!(f, "{:?}", s.parse::<f64>().unwrap()),
             Token::Identifier(s) => write!(f, "{}", s),
             Token::Reserved(s) => write!(f, "{}", s),
-            Token::EOF => write!(f, "EOF  null"),
+            Token::EOF => write!(f, ""),
         }
     }
 }

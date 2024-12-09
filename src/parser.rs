@@ -6,7 +6,7 @@ pub fn parse(tokens: Vec<Token>) {
     while let Some(token) = iter.next() {
         match token {
             Token::Reserved(s) => {
-                println!("{}", s);
+                print!("{}", s);
             }
             Token::Number(n) => {
                 let symbol = iter.next().unwrap();
@@ -15,20 +15,28 @@ pub fn parse(tokens: Vec<Token>) {
                         let next = iter.next().unwrap();
                         match next {
                             Token::Number(n2) => {
-                                println!("({} {} {})", symbol, n, n2);
+                                print!("({} {} {})", symbol, n, n2);
                             }
                             _ => {}
                         }
                     }
                     _ => {
-                        println!("{:?}", n.parse::<f64>().unwrap());
+                        print!("{:?}", n.parse::<f64>().unwrap());
+                        print!("{}", symbol);
                     }
                 }
             }
             Token::String(s) => {
-                println!("{}", s);
+                print!("{}", s);
+            }
+            Token::LeftParen => {
+                print!("(group ");
+            }
+            Token::RightParen => {
+                print!(")");
             }
             _ => {}
         }
     }
+    println!();
 }
