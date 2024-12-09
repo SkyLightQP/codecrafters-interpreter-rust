@@ -25,6 +25,9 @@ pub fn parse(tokens: Vec<Token>) {
                     }
                 }
             }
+            Token::String(s) => {
+                println!("{}", s);
+            }
             _ => {}
         }
     }
