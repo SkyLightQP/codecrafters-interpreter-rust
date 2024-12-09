@@ -20,7 +20,9 @@ pub fn parse(tokens: Vec<Token>) {
                             _ => {}
                         }
                     }
-                    _ => {}
+                    _ => {
+                        println!("{:?}", n.parse::<f64>().unwrap());
+                    }
                 }
             }
             _ => {}
